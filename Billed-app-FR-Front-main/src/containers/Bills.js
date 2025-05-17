@@ -33,7 +33,10 @@ export default class {
       .bills()
       .list()
       .then(snapshot => {
+        //modification affichage factures par ordre antéchronologique
         const bills = snapshot
+        const sortedBills = [...bills]
+          .sort((a, b) => new Date(b.date) - new Date(a.date))
           .map(doc => {
             try {
               return {
@@ -53,7 +56,7 @@ export default class {
             }
           })
           console.log('length', bills.length)
-        return bills
+        return sortedBills
       })
     }
   }
