@@ -72,6 +72,7 @@ export default class {
     this.document = document
     this.onNavigate = onNavigate
     this.store = store
+    this.statusStates = [false, false, false]
     $('#arrow-icon1').click((e) => this.handleShowTickets(e, bills, 1))
     $('#arrow-icon2').click((e) => this.handleShowTickets(e, bills, 2))
     $('#arrow-icon3').click((e) => this.handleShowTickets(e, bills, 3))
@@ -130,29 +131,58 @@ export default class {
     this.onNavigate(ROUTES_PATH['Dashboard'])
   }
 
+  // CORRECTION : 
+  // Pourquoi cette erreur ? 
+  // this.counter est le seul compteur pour 3 statuts.
+  // Quand on clique sur une nouvelle section, le comportement précédent est écrasé.
+  // On ne peut donc plus interagir avec la section précédemment ouverte. 
+  // Correction effectuée :
+  // Créer un state. Il est initialisé dans le constructor.
+  // Pour chaque statuts, il faut un state particulier plutôt qu'un compteur global. 
+  // 
+  // handleShowTickets(e, bills, index) {
+  //   if (this.counter === undefined || this.index !== index) this.counter = 0
+  //   if (this.index === undefined || this.index !== index) this.index = index
+  //   if (this.counter % 2 === 0) {
+  //     $(`#arrow-icon${this.index}`).css({ transform: 'rotate(0deg)'})
+  //     $(`#status-bills-container${this.index}`)
+  //       .html(cards(filteredBills(bills, getStatus(this.index))))
+  //     this.counter ++
+  //   } else {
+  //     $(`#arrow-icon${this.index}`).css({ transform: 'rotate(90deg)'})
+  //     $(`#status-bills-container${this.index}`)
+  //       .html("")
+  //     this.counter ++
+  //   }
+
+  //   bills.forEach(bill => {
+  //     $(`#open-bill${bill.id}`).click((e) => this.handleEditTicket(e, bill, bills))
+  //   })
+
+  //   return bills
+
+  // }
+
   handleShowTickets(e, bills, index) {
-    console.log(bills)
-    if (this.counter === undefined || this.index !== index) this.counter = 0
-    if (this.index === undefined || this.index !== index) this.index = index
-    if (this.counter % 2 === 0) {
-      $(`#arrow-icon${this.index}`).css({ transform: 'rotate(0deg)'})
-      $(`#status-bills-container${this.index}`)
-        .html(cards(filteredBills(bills, getStatus(this.index))))
-      this.counter ++
-    } else {
-      $(`#arrow-icon${this.index}`).css({ transform: 'rotate(90deg)'})
-      $(`#status-bills-container${this.index}`)
-        .html("")
-      this.counter ++
-    }
+  let newIndex = index -1 //pour coller avec les index du tableau d'état
+  this.statusStates[newIndex] = !this.statusStates[newIndex] //inverse l'état (true/false) d'un statut. Par défaut : false (cf. constructor)
 
-    bills.forEach(bill => {
-      $(`#open-bill${bill.id}`).click((e) => this.handleEditTicket(e, bill, bills))
+  const isOpen = this.statusStates[newIndex]
+
+  $(`#arrow-icon${index}`).css({ transform: isOpen ? 'rotate(0deg)' : 'rotate(90deg)' })
+  $(`#status-bills-container${index}`).html(
+    isOpen ? cards(filteredBills(bills, getStatus(index))) : ""
+  )
+
+  if (isOpen) {
+    const filtered = filteredBills(bills, getStatus(index))
+    filtered.forEach(bill => {
+      $(`#open-bill${bill.id}`).off('click').on('click', (e) => this.handleEditTicket(e, bill, bills))
     })
-
-    return bills
-
   }
+
+  return bills
+}
 
   getBillsAllUsers = () => {
     if (this.store) {
