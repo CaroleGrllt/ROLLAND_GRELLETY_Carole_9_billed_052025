@@ -186,5 +186,25 @@ describe("Given I am connected as an employee", () => {
         waitFor(() => expect(screen.getByText(/Mes notes de frais/i)).toBeVisible())
       })
     })
+
+    describe("When I do not fill out the form correctly and click on submit button", () => {
+      test("Then the document submission should not go through and I should stay on NewBill page", () => {
+        const newBill = new NewBill({
+          document,
+          onNavigate,
+          store: mockStore,
+          localStorage: window.localStorage,
+        })
+
+        const newBillForm = screen.getByTestId("form-new-bill")
+        const handleSubmit = jest.fn(newBill.handleSubmit)
+
+        newBillForm.addEventListener("submit", handleSubmit)
+        fireEvent.submit(newBillForm)
+
+        expect(handleSubmit).toHaveBeenCalled()
+        expect(newBillForm).toBeVisible()
+      })
+    })    
   })
 })
